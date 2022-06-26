@@ -1,8 +1,10 @@
 require 'socket'
 
-server = TCPServer.open(2000)                       #Obtenemos el puerto del servidor
+puerto = 2000
 
-puts "Servidor conectado en el puerto 2000..."
+server = TCPServer.open(puerto)                       #Obtenemos el puerto del servidor
+
+puts "Servidor conectado en el #{puerto}..."
 loop {
     Thread.start(server.accept) do |client|         #Conectamos el servidor
         
