@@ -1,26 +1,31 @@
-import io.ktor.client.*
-import io.ktor.client.plugins.websocket.*
-import io.ktor.http.*
-import io.ktor.websocket.*
-import io.ktor.util.*
-import kotlinx.coroutines.*
+import java.net.Socket
+import kotlin.concurrent.thread
 
-fun main() {
-    val client = HttpClient {
-        install(WebSockets)
-    }
-    runBlocking {
-        client.webSocket(method = HttpMethod.Get, host = 'localhost', port = 2000, path = "/chat") {
-            while(true) {
-                val othersMessage = incoming.receive() as? Frame.Text ?: continue
-                println(othersMessage.readText())
-                val myMessage = readLine()
-                if(myMessage != null) {
-                    send(myMessage)
-                }
-            }
+fun main()
+{
+    val client = Socket("localhost", 2000)
+
+    val clientOutStream = client.getOutputStream()
+    val clientInStream = client.getInputStream()
+
+    thread {
+        while(true)                                     // Creamos un loop para leer los datos del servidor e imprimirlos en consola
+        {
+            var nextByte = clientInStream.read()    
+            print(nextByte.toChar())
         }
     }
-    client.close()
-    println("Connection closed. Goodbye!")
+
+    thread {
+        while(true)                                      // Creamos un loop en el cual escribimos nuestro mensaje al servidor
+        {
+            var input = readLine()!!               
+            var mensajePred = "Cliente dijo: ".toByteArray()
+            clientOutStream.write(mensajePred + input.toByteArray() + 10.toByte())
+        }
+    }
 }
+// Primero se compilar
+// kotlinc cliente.kt -include-runtime -d cliente.jar
+// Para correrlo es
+// kotlin cliente.jar

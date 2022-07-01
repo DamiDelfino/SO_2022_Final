@@ -1,21 +1,36 @@
 var net = require('net');
+const readline = require('readline-sync')
 
-var host = '0.0.0.0';
-var port = 2000;
+const server = net.createServer()       // creamos la constante del servidor
 
-net.createServer(sock => {
+server.on('connection',(socket)=>{              // conecamos el servidor
+    socket.on('data', data =>{
+        console.log(""+ data)
+        sendLine()
+    })
+    socket.on('close',()=>{
+        console.log("Comunicacion finalizada")          //cuando se desconecta con exito imprimimos el mensaje
+    })
+    socket.on('error', (err)=>{
+        console.log(err.message)
+    })
+    function sendLine(){                                    //es para escribir nuestro mensaje
+        var line = readline.question('Escribir: ')  
+        if (line == "0"){
+            socket.end()
+        }else{
+            socket.write("Servidor dijo: " + line + "\n")      // enviamos el mensaje
+        }
+    
+    }
 
-    console.log(`connected: ${sock.remoteAddress}:${sock.remotePort}`);
+})
 
-    sock.on('data', (data) => {
-        console.log(`${sock.remoteAddress}: ${data}`);
-        sock.write(`${data}`);
-    });
+const port = 2000
 
-    sock.on('close', (data) => {
-        console.log(`connection closed: ${sock.remoteAddress}:${sock.remotePort}`);
-    });
+server.listen(port, ()=>{
+    console.log("Servidor conectado en el", server.address().port)  // Cuando se conecta nos envia el mensaje de exito
+})
 
-}).listen(port, host);
-
-console.log(`Server listening on ${host}:${port}`);
+// para correr el servidor 
+// node server.js
